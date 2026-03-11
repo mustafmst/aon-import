@@ -5,6 +5,8 @@ from typing import Any
 
 from aon_import.contracts import Parser, Renderer
 from aon_import.discover import TYPE_TO_ENDPOINT
+from aon_import.endpoints.creature.parser import CreatureParser
+from aon_import.endpoints.creature.renderer import CreatureRenderer
 from aon_import.handlers.generic import GenericParser, GenericRenderer
 from aon_import.models import PageType
 
@@ -39,4 +41,8 @@ def build_default_registry() -> EndpointRegistry:
     generic_handler = EndpointHandler(parser=GenericParser(), renderer=GenericRenderer())
     for page_type in TYPE_TO_ENDPOINT:
         registry.register(page_type, generic_handler)
+    registry.register(
+        "creature",
+        EndpointHandler(parser=CreatureParser(), renderer=CreatureRenderer()),
+    )
     return registry
