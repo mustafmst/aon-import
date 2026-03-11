@@ -4,7 +4,8 @@ Repository guidance for autonomous coding agents working in `pf2-data-import`.
 
 ## 1) Project overview
 
-- Language: Python 3.11+
+- Language: Python 3.13+
+- Environment/deps workflow: Pipenv (`Pipfile`)
 - Packaging: `pyproject.toml` with `setuptools`
 - Entry point: `aon-import` -> `aon_import.cli:app`
 - Runtime libs: `typer`, `pydantic`, `pyyaml`, `httpx`, `beautifulsoup4`, `lxml`
@@ -31,21 +32,19 @@ Repository guidance for autonomous coding agents working in `pf2-data-import`.
 
 ## 4) Setup commands
 
-Use one of these setups (agent may pick the simplest working option).
+Use Pipenv as the default workflow.
 
-### Option A: venv + pip
+### Recommended: Pipenv
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -U pip
-pip install -e .
+pipenv --python 3.13
+pipenv install
 ```
 
-### Option B: direct install (if already in managed env)
+Enter shell:
 
 ```bash
-pip install -e .
+pipenv shell
 ```
 
 ## 5) Build commands
@@ -53,15 +52,14 @@ pip install -e .
 There is no compile step; "build" means package build or CLI smoke run.
 
 ```bash
-python -m pip install build
-python -m build
+pipenv run python -m pip install build
+pipenv run python -m build
 ```
 
 CLI smoke checks:
 
 ```bash
-aon-import plan -c config.example.yaml
-python -m aon_import.cli plan -c config.example.yaml
+pipenv run python -m aon_import.cli plan -c config.example.yaml
 ```
 
 ## 6) Lint/format/type-check commands
@@ -70,15 +68,15 @@ No linter/formatter/type-checker is currently configured in `pyproject.toml`.
 When validating changes, use this practical baseline:
 
 ```bash
-python -m compileall aon_import
+pipenv run python -m compileall aon_import
 ```
 
 If you add tooling, prefer:
 
 ```bash
-ruff check .
-ruff format .
-mypy aon_import
+pipenv run ruff check .
+pipenv run ruff format .
+pipenv run mypy aon_import
 ```
 
 Do not introduce tool configs unless task requires it.
@@ -90,31 +88,31 @@ No test suite exists yet. If tests are added (recommended: `pytest`):
 Run all tests:
 
 ```bash
-pytest
+pipenv run pytest
 ```
 
 Run one file:
 
 ```bash
-pytest tests/test_resolver.py
+pipenv run pytest tests/test_resolver.py
 ```
 
 Run one test function:
 
 ```bash
-pytest tests/test_resolver.py::test_expand_ranges
+pipenv run pytest tests/test_resolver.py::test_expand_ranges
 ```
 
 Run tests by keyword expression:
 
 ```bash
-pytest -k "resolver and not slow"
+pipenv run pytest -k "resolver and not slow"
 ```
 
 Stop early on first failure:
 
 ```bash
-pytest -x
+pipenv run pytest -x
 ```
 
 ## 8) Coding style guidelines
@@ -186,21 +184,21 @@ pytest -x
 - Make minimal, targeted changes.
 - Do not refactor unrelated modules in the same patch.
 - Update docs/config examples when behavior changes.
-- If adding a dependency, justify it and update `pyproject.toml`.
+- If adding a dependency, justify it and update both `Pipfile` and `pyproject.toml`.
 - Prefer backward-compatible config evolution.
 
 ## 10) Suggested verification before finishing a task
 
 ```bash
-python -m compileall aon_import
-aon-import plan -c config.example.yaml
+pipenv run python -m compileall aon_import
+pipenv run python -m aon_import.cli plan -c config.example.yaml
 ```
 
 If tests exist in your branch:
 
 ```bash
-pytest
-pytest tests/test_x.py::test_y
+pipenv run pytest
+pipenv run pytest tests/test_x.py::test_y
 ```
 
 ## 11) Known current gaps (do not assume implemented)

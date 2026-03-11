@@ -4,13 +4,15 @@ Import selected Pathfinder 2e entries from Archives of Nethys into compact Markd
 
 ## Quick start
 
-1. Create a virtual environment and install dependencies.
+1. Create a Pipenv environment and install dependencies.
 2. Copy `config.example.yaml` to `config.yaml` and edit targets.
 3. Run:
 
 ```bash
-aon-import plan -c config.yaml
-aon-import import -c config.yaml
+pipenv --python 3.11
+pipenv install
+pipenv run python -m aon_import.cli plan -c config.yaml
+pipenv run python -m aon_import.cli import -c config.yaml
 ```
 
 ## Notes

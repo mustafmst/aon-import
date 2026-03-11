@@ -1,23 +1,20 @@
-PYTHON ?= python3
-VENV ?= .venv
+PYTHON ?= 3.13
 CONFIG ?= config.example.yaml
-BIN := $(VENV)/bin
 
 .PHONY: create-venv activate-venv install-deps run-plan run-import
 
 create-venv:
-	$(PYTHON) -m venv $(VENV)
+	pipenv --python $(PYTHON)
 
 activate-venv:
 	@echo "Run this in your shell:"
-	@echo "source $(VENV)/bin/activate"
+	@echo "pipenv shell"
 
 install-deps: create-venv
-	$(BIN)/python -m pip install --upgrade pip
-	$(BIN)/python -m pip install -e .
+	pipenv install
 
 run-plan:
-	$(BIN)/aon-import plan -c $(CONFIG)
+	pipenv run python -m aon_import.cli plan -c $(CONFIG)
 
 run-import:
-	$(BIN)/aon-import import -c $(CONFIG)
+	pipenv run python -m aon_import.cli import -c $(CONFIG)
