@@ -1,0 +1,47 @@
+version: 1
+
+output:
+  vault_root: "./vault"
+  folder_by_type: true
+  overwrite: true
+  filename_template: "{name}__{type}__{id}.md"
+
+http:
+  user_agent: "pf2-obsidian-importer/0.1 (+local use)"
+  timeout_seconds: 20
+  delay_ms: [500, 1200]
+  max_retries: 4
+  backoff_seconds: 1.5
+
+cache:
+  enabled: true
+  db_path: ".cache/aon-import.sqlite"
+  raw_html_dir: ".cache/raw"
+  revalidate: true
+
+markdown:
+  include_frontmatter: true
+  include_source_block: true
+  include_aon_link: true
+  compact_mode: true
+  link_traits: true
+  link_sources: false
+
+targets:
+  - type: "spell"
+    ids: [119, 123, 158]
+  - type: "feat"
+    id_ranges:
+      - [1, 20]
+    exclude_ids: [7]
+  - type: "item"
+    ids_file: "./lists/items_to_import.txt"
+  - type: "action"
+    where:
+      source_in: ["Player Core"]
+      trait_any: ["exploration"]
+
+validation:
+  fail_on_missing: false
+  fail_on_parse_error: false
+  strict_type_check: true
