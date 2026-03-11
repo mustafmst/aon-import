@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 
 from aon_import.config import AppConfig
+from aon_import.contracts import RenderResult
 from aon_import.models import ParsedEntry
 
 
@@ -43,7 +44,7 @@ def filename_for(entry: ParsedEntry, template: str) -> str:
     return raw if raw.endswith(".md") else f"{raw}.md"
 
 
-def render_markdown(config: AppConfig, entry: ParsedEntry) -> str:
+def render_markdown(config: AppConfig, entry: ParsedEntry) -> RenderResult:
     chunks: list[str] = []
 
     if config.markdown.include_frontmatter:
@@ -79,7 +80,10 @@ def render_markdown(config: AppConfig, entry: ParsedEntry) -> str:
     if config.markdown.include_aon_link:
         chunks.extend(["", "## AoN", f"- {entry.aon_url}"])
 
-    return "\n".join(chunks).strip() + "\n"
+    output_name = filename_for(entry, config.output.filename_template)
+    relative_dir = Path(TYPE_TO_FOLDER.get(entry.typed_id.type, f"{entry.typed_id.type}s"))
+    markdown = "\n".join(chunks).strip() + "\n"
+    return RenderResult(markdown=markdown, relative_dir=relative_dir, filename=output_name)
 
 
 def output_path_for(config: AppConfig, entry: ParsedEntry) -> Path:

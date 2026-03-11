@@ -49,10 +49,12 @@ class ParsedEntry:
     typed_id: TypedId
     name: str
     aon_url: str
+    fetched_at: str
     source: str | None
     traits: list[str]
     text: str
-    fetched_at: str
+    raw_text: str = ""
+    parse_warnings: list[str] = field(default_factory=list)
     output_path: Path | None = None
 
 

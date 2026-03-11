@@ -19,15 +19,20 @@ def run_import(config: AppConfig) -> ImportReport:
             try:
                 url = build_detail_url(typed_id)
                 html = fetcher.fetch(url)
-                parsed = parse_entry(typed_id, url, html)
-                rendered = render_markdown(config, parsed)
-                output_path = output_path_for(config, parsed)
+                parsed_result = parse_entry(typed_id, url, html)
+                rendered_result = render_markdown(config, parsed_result.entry)
+                output_path = output_path_for(config, parsed_result.entry)
+
+                if parsed_result.warnings:
+                    report.warnings.extend(
+                        [f"{typed_id.type}:{typed_id.id} -> {warning}" for warning in parsed_result.warnings]
+                    )
 
                 if output_path.exists() and not config.output.overwrite:
                     report.skipped += 1
                     continue
 
-                output_path.write_text(rendered, encoding="utf-8")
+                output_path.write_text(rendered_result.markdown, encoding="utf-8")
                 report.succeeded += 1
             except Exception as exc:  # noqa: BLE001
                 report.failed += 1

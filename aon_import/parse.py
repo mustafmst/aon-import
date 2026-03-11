@@ -5,6 +5,7 @@ import re
 
 from bs4 import BeautifulSoup
 
+from aon_import.contracts import ParseResult
 from aon_import.models import ParsedEntry, TypedId
 
 
@@ -15,7 +16,7 @@ MAIN_CONTENT_IDS = [
 ]
 
 
-def parse_entry(typed_id: TypedId, aon_url: str, html: str) -> ParsedEntry:
+def parse_entry(typed_id: TypedId, aon_url: str, html: str) -> ParseResult[ParsedEntry]:
     soup = BeautifulSoup(html, "lxml")
     _strip_noise(soup)
 
@@ -24,16 +25,26 @@ def parse_entry(typed_id: TypedId, aon_url: str, html: str) -> ParsedEntry:
     traits = _extract_traits(root)
     source = _extract_source(root)
     text = _extract_text(root)
+    warnings: list[str] = []
 
-    return ParsedEntry(
+    if name == "Unknown Entry":
+        warnings.append("Entry name was not found in page structure")
+
+    if not text:
+        warnings.append("Entry body text is empty")
+
+    entry = ParsedEntry(
         typed_id=typed_id,
         name=name,
         aon_url=aon_url,
+        fetched_at=datetime.now(timezone.utc).isoformat(),
         source=source,
         traits=traits,
         text=text,
-        fetched_at=datetime.now(timezone.utc).isoformat(),
+        raw_text=text,
+        parse_warnings=warnings.copy(),
     )
+    return ParseResult(entry=entry, warnings=warnings)
 
 
 def _strip_noise(soup: BeautifulSoup) -> None:
