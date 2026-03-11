@@ -4,7 +4,9 @@ from pathlib import Path
 
 import typer
 
-from aon_import.config import load_config
+from aon_import.config import AppConfig, load_config
+from aon_import.models import PageType, ResolutionResult
+from aon_import.registry import build_default_registry
 from aon_import.resolver import resolve_target_ids, summarize_resolution
 from aon_import.scraper import run_import
 
@@ -17,6 +19,7 @@ def plan(config: Path = typer.Option(..., "--config", "-c", exists=True, readabl
     """Show resolved target IDs from config."""
     loaded = load_config(config)
     result = resolve_target_ids(loaded)
+    _validate_registry_support(loaded, result)
     typer.echo(summarize_resolution(result))
 
 
@@ -26,6 +29,7 @@ def import_command(
 ) -> None:
     """Fetch target IDs and write markdown notes."""
     loaded = load_config(config)
+    _validate_registry_support(loaded, resolve_target_ids(loaded))
     report = run_import(loaded)
 
     typer.echo(f"Total targets: {report.total}")
@@ -49,7 +53,21 @@ def stats(config: Path = typer.Option(..., "--config", "-c", exists=True, readab
     """Show what would be imported by type."""
     loaded = load_config(config)
     result = resolve_target_ids(loaded)
+    _validate_registry_support(loaded, result)
     typer.echo(summarize_resolution(result))
+
+
+def _validate_registry_support(config: AppConfig, resolution: ResolutionResult) -> None:
+    registry = build_default_registry()
+    target_types: set[PageType] = {typed_id.type for typed_id in resolution.resolved_ids}
+    unsupported = registry.missing_types(target_types)
+    if not unsupported:
+        return
+
+    message = f"Unsupported target types: {', '.join(sorted(unsupported))}"
+    if config.validation.strict_type_check:
+        raise typer.BadParameter(message)
+    typer.echo(f"Warning: {message}")
 
 
 if __name__ == "__main__":
